@@ -1,0 +1,793 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
+
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+ margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* ⬅️ vertical center */
+  align-items: center;     /* ⬅️ horizontal center */
+  background: #0a0020;
+  font-family: 'Orbitron', sans-serif;
+  overflow: hidden;
+}
+
+body::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 200%;
+  height: 200%;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 255, 0.06) 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      #00f 0px,
+      #00f 2px,
+      #f0f 2px,
+      #f0f 4px,
+      #0ff 4px,
+      transparent 6px
+    );
+  animation: scrollLines 4s linear infinite, flickerLines 2s infinite;
+  z-index: -1;
+  opacity: 0.3;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+@keyframes scrollLines {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-5%, -10%); }
+}
+@keyframes flickerLines {
+  0%, 100% { opacity: 0.2; }
+  25% { opacity: 0.3; }
+  50% { opacity: 0.1; }
+  75% { opacity: 0.35; }
+}
+
+.glitch-title {
+  font-size: 3em;
+  text-align: center;
+  margin-bottom: 30px;
+  color: #0ff;
+  text-shadow: 0 0 5px #0ff, 0 0 10px #f0f;
+  animation: glitchPulse 2s infinite ease-in-out;
+}
+.glitch-title.small {
+  font-size: 1.5em;
+}
+@keyframes glitchPulse {
+  0%, 100% { text-shadow: 0 0 5px #0ff, 0 0 10px #f0f; }
+  50% { text-shadow: 0 0 15px #0ff, 0 0 30px #f0f; }
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 20px;
+  border: 2px solid #0ff;
+  box-shadow: 0 0 10px #0ff, 0 0 20px #f0f;
+  border-radius: 8px;
+  animation: flickerFrame 3s infinite;
+}
+.login-inner {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+.todo-container {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* enables flex scroll children */
+  background: rgba(0,0,0,0.5);
+  border: 2px solid #0ff;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 0 10px #0ff, 0 0 20px #f0f;
+  animation: flickerFrame 3s infinite;
+  overflow: hidden;
+  position: relative;
+  padding: 20px 24px 0 24px; /* top, right, bottom, left - leave space for tasks inside */
+  margin-bottom: 48px;
+}
+
+@keyframes flickerFrame {
+  0%, 100% { box-shadow: 0 0 10px #0ff, 0 0 20px #f0f; }
+  50% { box-shadow: 0 0 20px #f0f, 0 0 40px #0ff; }
+}
+
+input[type="text"],
+input[type="date"],
+input[type="number"] {
+  background: #111;
+  border: 1px solid #0ff;
+  color: #0ff;
+  padding: 10px;
+  font-size: 1em;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+input:focus {
+  outline: none;
+  box-shadow: 0 0 10px #0ff, 0 0 20px #f0f;
+  animation: glitchBorder 0.5s infinite;
+}
+
+input[type="date"]::placeholder {
+  color: #0ff;
+  opacity: 0.4; /* Faded, like your motivation at 2am */
+  font-style: italic;
+}
+
+.custom-checkbox {
+  background: #111;
+  border: 1.5px solid #0ff;
+  color: #0ff;
+  border-radius: 4px;
+  box-shadow: 0 0 10px #0ff, 0 0 20px #f0f;
+  accent-color: #0ff;
+  opacity: 0.75;
+}
+.custom-checkbox:focus {
+outline: 2px solid #0ff;
+  box-shadow: 0 0 18px #0ff, 0 0 40px #00f;
+}
+.custom-checkbox:checked {
+  background: #0ff;
+  border-color: #fff;
+  box-shadow: 
+    0 0 14px #0ff, 
+    0 0 34px #0ff, 
+    0 0 48px #00f, 
+    0 0 5px #fff, 
+    0 0 2px #0ff;
+  outline: 2px solid #0ff;
+  opacity: 1;
+}
+
+@keyframes glitchBorder {
+  0%, 100% { border-color: #0ff; }
+  50% { border-color: #f0f; }
+}
+
+button {
+  background-color: #0ff;
+  color: #000;
+  padding: 10px 15px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  font-size: 1em;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+button:hover {
+  background-color: #f0f;
+  color: #000;
+}
+
+#taskList.centered-wide {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-bottom: 20px;
+  margin: 0;
+  height: 100%;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+#taskList li {
+  padding: 10px 15px;
+  margin-bottom: 12px;
+  background: rgba(0, 255, 255, 0.08);
+  color: #0ff;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  font-size: 1em;
+  border-radius: 6px;
+  border: none;
+  box-shadow: none;
+  animation: none;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+}
+#taskList li input[type="checkbox"] {
+  transform: scale(1.5);
+  accent-color: #0ff;
+  cursor: pointer;
+}
+
+.task-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  flex-grow: 1;
+  cursor: pointer;
+}
+.task-line input[type="checkbox"] {
+  transform: scale(1.4);
+  accent-color: #0ff;
+  cursor: pointer;
+}
+
+.add-task-row {
+ display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 15px;
+  box-sizing: border-box;
+  padding: 16px 0 0 0;
+  box-sizing: border-box;
+}
+
+.centered-wide {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* === Modal visibility rules === */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+
+.modal.show {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.3s ease, visibility 0s linear 0s;
+}
+
+.modal-box {
+  background-color: rgba(0, 0, 20, 0.9);
+  padding: 30px;
+  border: 2px solid #0ff;
+  box-shadow: 0 0 15px #0ff, 0 0 30px #f0f;
+  border-radius: 8px;
+  text-align: center;
+  animation: flickerFrame 3s infinite;
+  z-index: 1001;
+}
+
+.modal-box h2 {
+  margin-bottom: 20px;
+  color: #0ff;
+  text-shadow: 0 0 5px #0ff, 0 0 10px #f0f;
+}
+
+.modal-box input {
+  background: #111;
+  border: 1px solid #0ff;
+  color: #0ff;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-size: 1em;
+  border-radius: 4px;
+  display: block;
+  width: 100%;
+}
+
+.modal-box button {
+  background-color: #0ff;
+  color: #000;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  font-size: 1em;
+  border-radius: 4px;
+}
+
+.active-tasks-box {
+  border: 2px solid #ff00ff;
+  padding: 20px;
+  border-radius: 10px;
+  margin: 20px auto;
+  width: 100%;
+  max-width: 800px;
+  text-align: center;
+  background-color: rgba(255, 0, 255, 0.05);
+  box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff66ff;
+  animation: flickerFrame 3s infinite;
+}
+
+.active-tasks-box h3 {
+  color: #ff66ff;
+  text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff66ff;
+  margin-bottom: 10px;
+}
+
+.active-tasks-box p {
+  color: #ffccff;
+  font-style: italic;
+}
+
+.task-box {
+  transition: background 0.18s, box-shadow 0.18s, border 0.2s;
+}
+
+.task-box:hover,
+.task-box:focus-within {
+  background: rgba(255, 0, 255, 0.09);        /* Pink highlight */
+  box-shadow: 0 0 12px #ff00ff99, 0 0 28px #ff66ff66;
+  border: 2px solid #ff00ff;
+  z-index: 2;
+}
+
+#taskList li.task-box:hover {
+  background: rgba(255, 0, 255, 0.09) !important;
+  box-shadow: 0 0 12px #ff00ff99, 0 0 28px #ff66ff66;
+  border: 2px solid #ff00ff;
+  z-index: 2;
+}
+
+.date-field {
+  position: relative;
+  display: inline-block;
+  width: 140px; /* Match input width */
+}
+
+.date-field input[type="date"] {
+  width: 100%;
+  background: #111;
+  border: 1px solid #0ff;
+  color: #0ff;
+  padding: 10px;
+  font-size: 1em;
+  border-radius: 4px;
+}
+
+.date-field .date-placeholder {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #0ff;
+  opacity: 0.4;
+  font-style: italic;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  user-select: none;
+  font-size: 1em;
+}
+
+#taskDate.flatpickr-input {
+  background: #111 !important;
+  border: 1px solid #0ff !important;
+  color: #0ff !important;
+  padding: 10px !important;
+  font-size: 1em !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+#taskDate.flatpickr-input:focus {
+  outline: none !important;
+  box-shadow: 0 0 10px #0ff, 0 0 20px #f0f !important;
+  animation: glitchBorder 0.5s infinite;
+}
+
+/* FLATPICKR CUSTOM CYBERPUNK THEME */
+.flatpickr-calendar {
+  background: rgba(0, 0, 0, 0.8) !important;
+  border: 2px solid #0ff !important;
+  box-shadow: 0 0 15px #0ff, 0 0 30px #f0f;
+  border-radius: 10px;
+  color: #0ff;
+  font-family: 'Orbitron', sans-serif;
+  z-index: 9999;
+}
+
+.flatpickr-months,
+.flatpickr-weekdays {
+  background: transparent !important;
+  color: #0ff !important;
+}
+
+.flatpickr-day {
+  background: transparent !important;
+  color: #0ff !important;
+  border-radius: 6px !important;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.flatpickr-day:hover,
+.flatpickr-day:focus {
+  background: rgba(0,255,255,0.22) !important;
+  color: #fff !important;
+  box-shadow: 0 0 8px #0ff;
+}
+
+
+.flatpickr-day.selected, 
+.flatpickr-day.startRange, 
+.flatpickr-day.endRange {
+  background: #0ff !important;
+  color: #111 !important;
+  box-shadow: 0 0 10px #0ff, 0 0 24px #f0f;
+  border-radius: 6px !important;
+}
+
+/* Hide native blue outline on click/focus, use our own */
+.flatpickr-day:focus {
+  outline: none !important;
+}
+
+/* Month navigation arrows */
+.flatpickr-prev-arrow, .flatpickr-next-arrow {
+  color: #0ff !important;
+  filter: drop-shadow(0 0 4px #0ff);
+}
+
+
+/* TODAY: Only a neon pink border, no background */
+.flatpickr-day.today {
+  background: transparent !important;
+  color: #0ff !important;
+  border: 2px solid #ff00ff !important;   /* Neon pink border */
+  box-shadow: 0 0 12px #ff00ff, 0 0 24px #0ff;
+  border-radius: 7px !important;
+  font-weight: bold;
+  position: relative;
+  z-index: 1;
+}
+
+/* SELECTED DAY (including if today): Neon pink background, white text, no border */
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+  background: #ff00ff !important;
+  color: #fff !important;
+  border-radius: 7px !important;
+  box-shadow: 0 0 10px #ff00ffcc, 0 0 28px #0ff;
+  border: none !important;
+  z-index: 2;
+}
+/* --- Clean Flatpickr year/month header for Cyber To-Do --- */
+
+/* Hide navigation arrows (left/right) for months */
+.flatpickr-prev-month,
+.flatpickr-next-month {
+  display: none !important;
+}
+
+/* Make year input area wide and cyber, hide up/down year arrows */
+.flatpickr-current-month {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #0ff !important;
+}
+
+.flatpickr-current-month .numInputWrapper {
+  min-width: 7em !important;
+  width: 7em !important;
+  display: inline-block !important;
+  position: relative !important;
+}
+
+.flatpickr-current-month input.cur-year {
+  display: inline-block !important;
+  width: 100% !important;
+  min-width: 5em !important;
+  padding-right: 0 !important;
+  margin-left: 8px !important;
+  font-size: 1em !important;
+  font-family: 'Orbitron', sans-serif !important;
+  background: #111 !important;
+  color: #0ff !important;
+  border: 1.5px solid #0ff !important;
+  border-radius: 6px !important;
+  box-shadow: 0 0 12px #0ff4, 0 0 18px #ff00ff3c;
+  text-align: center !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  outline: none !important;
+  opacity: 1 !important;
+}
+
+.flatpickr-current-month input.cur-year:focus {
+  outline: none !important;
+  box-shadow: 0 0 14px #0ff, 0 0 34px #ff00ff;
+  border-color: #ff00ff !important;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowUp,
+.flatpickr-current-month .numInputWrapper span.arrowDown {
+  display: none !important;
+}
+
+/* Style the month dropdown to match */
+.flatpickr-monthDropdown-months,
+.flatpickr-monthDropdown-months select {
+  background: #111 !important;
+  color: #0ff !important;
+  border: 1.5px solid #0ff !important;
+  border-radius: 6px !important;
+  font-family: 'Orbitron', sans-serif !important;
+  font-size: 1em !important;
+  box-shadow: 0 0 10px #0ff2, 0 0 20px #f0f1;
+}
+
+.flatpickr-monthDropdown-months select {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  padding-right: 18px !important;
+  background-image:
+    linear-gradient(45deg, #0ff 40%, transparent 41%),
+    linear-gradient(135deg, #0ff 40%, transparent 41%);
+  background-position:
+    calc(100% - 12px) calc(50% - 3px),
+    calc(100% - 7px)  calc(50% - 3px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.flatpickr-monthDropdown-months:focus,
+.flatpickr-monthDropdown-months select:focus {
+  outline: none !important;
+  box-shadow: 0 0 14px #0ff, 0 0 34px #ff00ff;
+  border-color: #ff00ff !important;
+}
+
+.tasks-section-header {
+  position: relative;
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  color: #0ff;
+  font-family: 'Orbitron', sans-serif;
+  text-align: left;
+  z-index: 10;
+}
+
+.date-display {
+  color: #ff00ff;
+  border-bottom: 2px dashed #ff00ff;
+  cursor: pointer;
+  padding: 2px 16px 2px 4px;
+  margin-left: 5px;
+  font-weight: bold;
+  display: inline-block;
+  position: relative;
+  transition: color 0.18s, border-color 0.18s;
+}
+
+.date-display .chevron {
+  margin-left: 8px;
+  font-size: 1em;
+  transition: transform 0.18s;
+  display: inline-block;
+}
+
+.date-display.open .chevron {
+  transform: rotate(180deg);
+}
+
+.date-dropdown {
+  display: none;
+  position: absolute;
+  left: 120px;
+  top: 1.7em;
+  background: #111;
+  border: 2px solid #ff00ff;
+  box-shadow: 0 0 16px #ff00ff55, 0 0 28px #0ff44;
+  border-radius: 7px;
+  min-width: 180px;
+  padding: 6px 0;
+  z-index: 1002;
+  font-size: 0.95em;
+}
+
+.date-dropdown.open {
+  display: block;
+}
+
+.dropdown-item {
+  padding: 10px 22px 10px 16px;
+  cursor: pointer;
+  color: #0ff;
+  transition: background 0.14s, color 0.14s;
+  border-radius: 5px;
+}
+
+.dropdown-item:hover, .dropdown-item.active {
+  background: #ff00ff33;
+  color: #fff;
+}
+
+/* Style the custom date input */
+#headerCustomDateInput {
+  margin-left: 10px;
+  background: #111 !important;
+  border: 1px solid #0ff !important;
+  color: #0ff !important;
+  border-radius: 4px;
+  font-size: 1em;
+  padding: 8px 12px;
+  box-shadow: 0 0 10px #0ff2, 0 0 20px #f0f1;
+  display: inline-block;
+}
+
+.user-header-bar {
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 22px;
+  padding: 22px 40px 8px 40px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 99;
+}
+
+.user-name-neon {
+  color: #ff29ff;
+  font-size: 1.25em;
+  font-weight: bold;
+  text-shadow: 0 0 7px #ff00ff, 0 0 15px #fff, 0 0 16px #ff29ff;
+  letter-spacing: 1px;
+}
+
+.logout-btn {
+  background: linear-gradient(90deg, #222931 0, #333c45 100%);
+  color: #b5c9e3;
+  border: none;
+  border-radius: 7px;
+  padding: 9px 18px 9px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1em;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  box-shadow: 0 0 4px #00fff9, 0 0 12px #22293155;
+  transition: background 0.13s, box-shadow 0.15s, filter 0.1s;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+}
+
+.logout-btn .logout-icon svg {
+  display: inline-block;
+  filter: drop-shadow(0 0 4px #0ff);
+  stroke: #0ff; /* keep icon blue for contrast */
+}
+
+.logout-btn:hover {
+  background: linear-gradient(90deg, #29384c 0, #006eff 100%);
+  color: #fff;
+  box-shadow: 0 0 12px #00fff9, 0 0 22px #0ff9;
+  filter: brightness(1.09);
+}
+
+.logout-btn:active {
+  background: linear-gradient(90deg, #203040 0, #003355 100%);
+  color: #fff;
+  filter: brightness(0.95);
+  box-shadow: 0 0 4px #00fff9, 0 0 8px #003355;
+}
+button,
+.add-task-row button,
+.modal-box button {
+  background: linear-gradient(90deg, #006eff 0%, #00fff9 100%);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 9px 20px;
+  font-size: 1em;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  box-shadow: 0 0 4px #00fff9, 0 0 8px #006eff;
+  transition: background 0.12s, box-shadow 0.15s, filter 0.08s;
+  cursor: pointer;
+  outline: none;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 2px #fff, 0 0 2px #00fff9;
+  position: relative;
+}
+
+button:hover,
+.add-task-row button:hover,
+.modal-box button:hover {
+  background: linear-gradient(90deg, #00fff9 0%, #006eff 100%);
+  box-shadow: 0 0 8px #00fff9, 0 0 12px #006eff;
+  filter: brightness(1.07);
+}
+
+button:active,
+.add-task-row button:active,
+.modal-box button:active {
+  background: linear-gradient(90deg, #0ff 0%, #29cfff 100%);
+  filter: brightness(0.97);
+  box-shadow: 0 0 2px #00fff9, 0 0 6px #006eff;
+}
+
+.tasks-section {
+  max-width: 900px;       /* or 800px, just make sure it's the SAME for both! */
+  margin: 20px auto 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.add-task-container {
+  max-width: 900px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+  padding-left: 0;
+  padding-right: 0;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+  .tasks-section { padding: 0 3vw; }
+  .todo-container, .add-task-container { padding-left: 3vw; padding-right: 3vw; }
+}
+
+body {
+  overflow: hidden; /* page scroll will NOT hide Add row */
+}
+
+/* Bigger font and checkboxes for ACTIVE tasks */
+.active-tasks-box li.task-box.active-big {
+  font-size: 1.45em;
+  min-height: 52px;
+  align-items: center;
+}
+
+.custom-checkbox.active-big-checkbox {
+  transform: scale(1.6);
+  margin-right: 24px;
+}
+
+.task-timer {
+  display: inline-block;
+  min-width: 80px;
+  text-align: right;
+  font-family: 'Orbitron', monospace;
+  font-size: 1em;
+  color: #0ff;
+  margin-left: 36px;
+  background: rgba(25,0,50,0.10);
+  border-radius: 6px;
+  padding: 6px 12px;
+  letter-spacing: 2px;
+  box-shadow: 0 0 10px #ff00ff33, 0 0 4px #0ff;
+}
