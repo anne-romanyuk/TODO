@@ -325,8 +325,14 @@ button:hover {
 
 .active-tasks-box h3 {
   color: #ff66ff;
-  text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff66ff;
-  margin-bottom: 10px;
+  text-shadow: 0 0 15px #ff00ff, 0 0 20px #0ff;
+  margin-bottom: 20px;
+  font-size: 1.4em;          /* Make it way bigger */
+  font-weight: 900;          /* Super bold */
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  line-height: 1.2;
+  padding: 8px 0;
 }
 
 .active-tasks-box p {
@@ -767,14 +773,22 @@ body {
 
 /* Bigger font and checkboxes for ACTIVE tasks */
 .active-tasks-box li.task-box.active-big {
-  font-size: 1.45em;
-  min-height: 52px;
+  font-size: 1.5em;
+  min-height: 56px;
   align-items: center;
+  background: none;
+  box-shadow: none;
+  border: none;
+  margin-bottom: 24px;
+  padding: 0;
 }
 
 .custom-checkbox.active-big-checkbox {
-  transform: scale(1.6);
+  transform: scale(2.0);
   margin-right: 24px;
+  margin-left: 8px;
+  background: #181828;
+  flex: none;
 }
 
 .task-timer {
@@ -790,4 +804,189 @@ body {
   padding: 6px 12px;
   letter-spacing: 2px;
   box-shadow: 0 0 10px #ff00ff33, 0 0 4px #0ff;
+}
+
+/* --- CYBERPUNK PROGRESS BAR --- */
+.active-task-progress-bar-wrap {
+  flex: 1;
+  height: 56px;
+  min-width: 0;
+  background: rgba(255, 0, 255, 0.13);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 5px #ff00ff55, 0 0 5px #0ff99;
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  border: 2px solid #ff00ff99;
+  background: transparent
+}
+
+.active-task-progress-bar {
+  height: 100%;
+  left: 0; top: 0;
+  position: absolute;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #ff00ff 60%, #0ff 100%);
+  box-shadow: 0 0 10px #ff00ff, 0 0 24px #0ff;
+  z-index: 2;
+  opacity: 0.94;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 12%;
+}
+
+.active-task-progress-bar-glow {
+  pointer-events: none;
+  position: absolute;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  border-radius: 6px;
+  background: radial-gradient(circle, #ff00ff44 50%, transparent 80%);
+  filter: blur(4px);
+  z-index: 1;
+}
+
+.active-task-row-flex {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.active-task-progress-text {
+  width: 100%;
+  position: relative;
+  text-align: center;
+  color: #fff;
+  font-size: 1.25em;
+  font-weight: bold;
+  text-shadow: 0 0 8px #0ff, 0 0 18px #ff00ff;
+  z-index: 3;
+  pointer-events: none;
+  letter-spacing: 1px;
+  padding: 0 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.active-big-checkbox {
+  transform: scale(2.1);
+  margin-right: 20px;
+  margin-left: 6px;
+  background: #181828;
+}
+
+.active-tasks-box li.task-box.active-big {
+  font-size: 1.5em;
+  min-height: 54px;
+  align-items: center;
+  background: none;
+  box-shadow: none;
+  border: none;
+  margin-bottom: 24px;
+  padding: 0;
+}
+
+.custom-checkbox.active-big-checkbox {
+  transform: scale(2.0);
+  margin-right: 24px;
+  margin-left: 8px;
+  background: #181828;
+  flex: none;
+}
+
+.active-task-progress-bar {
+  height: 100%;
+  left: 0; top: 0;
+  position: absolute;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #ff00ff 60%, #0ff 100%);
+  box-shadow: 0 0 36px #ff00ff, 0 0 24px #0ff;
+  z-index: 2;
+  opacity: 0.94;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 12%;
+}
+
+.active-task-progress-text {
+  width: 100%;
+  position: relative;
+  z-index: 4;
+  text-align: left;
+  color: #fff;
+  font-size: 1.15em;
+  font-weight: bold;
+  text-shadow: 0 0 8px #0ff, 0 0 18px #ff00ff;
+  letter-spacing: 1px;
+  padding: 0 44px 0 32px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+  min-width: 0;
+  justify-content: space-between;
+}
+
+
+.active-alarm-icon {
+  margin-left: 24px;
+  margin-right: 0;
+  font-size: 1.25em;
+  color: #ff0;
+  text-shadow: 0 0 8px #ff0, 0 0 16px #fff500, 0 0 10px #ff00ff;
+  vertical-align: middle;
+}
+
+.active-task-progress-inner-flex {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 3;
+  pointer-events: none;
+  padding: 0 18px;
+  min-height: 58px;
+}
+
+.active-task-progress-center {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 1;
+  pointer-events: all;
+  gap: 22px;
+}
+
+.active-task-progress-title {
+  color: #fff;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-align: left;
+  text-shadow: 0 0 8px #0ff, 0 0 18px #ff00ff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 400px;
+  letter-spacing: 1px;
+  flex: 1 1 auto;
+}
+
+.active-task-progress-timer {
+  color: #fff;
+  font-size: 1.1em;
+  font-weight: 600;
+  text-shadow: 0 0 8px #0ff, 0 0 18px #ff00ff;
+  margin-left: 20px;
+  min-width: 56px;
+  flex: none;
+  text-align: right;
+  pointer-events: all;
 }

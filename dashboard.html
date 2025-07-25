@@ -15,7 +15,6 @@
       <span class="logout-label">Logout</span>
     </button>
   </div>
-
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
@@ -178,87 +177,157 @@
     }
 
     // ==== ACTIVE TASKS ====
-    function renderActiveTasks(tasks) {
-      // Stop existing timers
-      if (_activeTimersInterval) clearInterval(_activeTimersInterval);
+   function renderActiveTasks(tasks) {
+  const list = document.getElementById("activeTaskList");
+  const note = document.getElementById("activeTaskNote");
+  list.innerHTML = "";
 
-      const list = document.getElementById("activeTaskList");
-      const note = document.getElementById("activeTaskNote");
-      list.innerHTML = "";
+  // Only ACTIVE status!
+  const activeTasks = tasks.filter(task => task.status === "ACTIVE");
 
-      const activeTasks = tasks.filter(task => task.status === "ACTIVE");
-      if (!activeTasks.length) {
-        note.style.display = "block";
-        list.style.display = "none";
-        return;
+  if (!activeTasks.length) {
+    note.style.display = "block";
+    list.style.display = "none";
+    return;
+  }
+  note.style.display = "none";
+  list.style.display = "block";
+
+  activeTasks.forEach(task => {
+    const li = document.createElement("li");
+    li.className = "task-box active-big";
+    li.style.position = "relative";
+    li.style.overflow = "visible";
+    li.style.padding = "0";
+    li.style.background = "none";
+    li.style.boxShadow = "none";
+    li.style.marginBottom = "24px";
+
+    // --- FLEX CONTAINER [checkbox | progress bar area] ---
+    const rowFlex = document.createElement("div");
+    rowFlex.style.display = "flex";
+    rowFlex.style.alignItems = "center";
+    rowFlex.style.justifyContent = "center";
+    rowFlex.style.width = "100%";
+    rowFlex.style.gap = "16px";
+    rowFlex.style.minHeight = "60px";
+
+    // --- Checkbox area (left) ---
+    const checkboxWrap = document.createElement("div");
+    checkboxWrap.style.display = "flex";
+    checkboxWrap.style.alignItems = "center";
+    checkboxWrap.style.justifyContent = "center";
+    checkboxWrap.style.minWidth = "60px";
+    checkboxWrap.style.width = "60px";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "custom-checkbox active-big-checkbox";
+    checkbox.checked = task.status === "COMPLETED";
+    checkbox.addEventListener("change", async () => {
+      await updateTaskStatus(task.id, "COMPLETED");
+      await loadTasks();
+    });
+    checkboxWrap.appendChild(checkbox);
+
+    // --- Progress bar + task text + timer (right, fills all) ---
+    const progressWrap = document.createElement("div");
+    progressWrap.className = "active-task-progress-bar-wrap";
+    progressWrap.style.flex = "1";
+    progressWrap.style.position = "relative";
+    progressWrap.style.display = "flex";
+    progressWrap.style.alignItems = "center";
+    progressWrap.style.justifyContent = "center";
+    progressWrap.style.minHeight = "56px";
+    progressWrap.style.padding = "0";
+
+    // Progress bar
+    const duration = task.durationMinutes || 1;
+    const startTime = task.activeSince
+      ? new Date(task.activeSince)
+      : new Date();
+    const now = new Date();
+    const elapsed = Math.max(0, (now - startTime) / 1000); // seconds
+    const total = duration * 60;
+    let percent = Math.min(100, (elapsed / total) * 100);
+
+    const progressBar = document.createElement("div");
+    progressBar.className = "active-task-progress-bar";
+    progressBar.style.width = percent + "%";
+
+    const progressGlow = document.createElement("div");
+    progressGlow.className = "active-task-progress-bar-glow";
+
+    // Inner flex for text & timer (on top of progress bar)
+    const innerFlex = document.createElement("div");
+    innerFlex.className = "active-task-progress-inner-flex";
+    innerFlex.style.width = "100%";
+    innerFlex.style.display = "flex";
+    innerFlex.style.flexDirection = "row";
+    innerFlex.style.alignItems = "center";
+    innerFlex.style.justifyContent = "space-between";
+    innerFlex.style.position = "relative";
+    innerFlex.style.zIndex = "3";
+    innerFlex.style.padding = "0 18px";
+    innerFlex.style.minHeight = "58px";
+    innerFlex.style.pointerEvents = "none";
+
+    // Task title (centered with timer)
+    const span = document.createElement("span");
+    span.className = "active-task-progress-title";
+    span.innerText = task.title;
+    span.style.flex = "1 1 auto";
+    span.style.textAlign = "left";
+    span.style.whiteSpace = "nowrap";
+    span.style.overflow = "hidden";
+    span.style.textOverflow = "ellipsis";
+    span.style.fontSize = "1.15em";
+
+    // Timer (right)
+    let secondsLeft = Math.max(0, total - elapsed);
+    const mins = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+    const secs = String(Math.floor(secondsLeft % 60)).padStart(2, "0");
+    const timer = document.createElement("span");
+    timer.className = "active-task-progress-timer";
+    timer.innerHTML = "⏰ " + mins + ":" + secs;
+    timer.style.flex = "none";
+    timer.style.marginLeft = "24px";
+    timer.style.pointerEvents = "all";
+
+    innerFlex.appendChild(span);
+    innerFlex.appendChild(timer);
+
+    progressWrap.appendChild(progressBar);
+    progressWrap.appendChild(progressGlow);
+    progressWrap.appendChild(innerFlex);
+
+    // Compose row
+    rowFlex.appendChild(checkboxWrap);
+    rowFlex.appendChild(progressWrap);
+    li.appendChild(rowFlex);
+    list.appendChild(li);
+
+    // TIMER ANIMATION
+    function updateRowTimer() {
+      const now = new Date();
+      const elapsed = Math.max(0, (now - startTime) / 1000);
+      let percent = Math.min(100, (elapsed / total) * 100);
+      let secondsLeft = Math.max(0, total - elapsed);
+      const mins = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+      const secs = String(Math.floor(secondsLeft % 60)).padStart(2, "0");
+      progressBar.style.width = percent + "%";
+      timer.innerHTML = "⏰ " + mins + ":" + secs;
+      if (percent < 100) {
+        requestAnimationFrame(updateRowTimer);
+      } else {
+        progressBar.style.width = "100%";
+        timer.innerHTML = "⏰ 00:00";
       }
-      note.style.display = "none";
-      list.style.display = "block";
-
-      activeTasks.forEach(task => {
-        const li = document.createElement("li");
-        li.className = "task-box active-big";
-        li.style.display = "flex";
-        li.style.alignItems = "center";
-        li.style.gap = "30px";
-        li.style.fontSize = "1.6em";
-
-        // Big Checkbox
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.className = "custom-checkbox active-big-checkbox";
-        checkbox.style.transform = "scale(2.0)";
-        checkbox.checked = task.status === "COMPLETED";
-        checkbox.addEventListener("change", async () => {
-          await updateTaskStatus(task.id, "COMPLETED");
-          await loadTasks();
-        });
-
-        // Task text
-        const taskLine = document.createElement("div");
-        taskLine.className = "task-line";
-        taskLine.style.flex = "1";
-        taskLine.style.cursor = "pointer";
-        taskLine.addEventListener("click", (e) => {
-          openStartModal(task.title, task.id, task.durationMinutes);
-          e.stopPropagation();
-        });
-
-        const span = document.createElement("span");
-        // ==== NO DATE HERE ====
-        span.innerHTML = `<strong>${task.title}</strong>${task.durationMinutes ? ` (${task.durationMinutes} mins)` : ""}`;
-        taskLine.appendChild(span);
-
-        // TIMER
-        const timer = document.createElement("span");
-        timer.className = "task-timer";
-        timer.dataset.taskid = task.id;
-        timer.style.marginLeft = "30px";
-
-        // Logic: Get endTime from localStorage, else set now+duration
-        let duration = task.durationMinutes ? task.durationMinutes * 60 : 0;
-        let endTime = null;
-        if (duration) {
-          const timerKey = `activeTask_${task.id}_endTime`;
-          if (!localStorage.getItem(timerKey)) {
-            endTime = Date.now() + duration * 1000;
-            localStorage.setItem(timerKey, endTime);
-          } else {
-            endTime = parseInt(localStorage.getItem(timerKey), 10);
-          }
-          timer.dataset.endtime = endTime;
-        }
-        timer.textContent = duration ? formatSeconds(Math.max(0, Math.floor(((endTime || 0) - Date.now()) / 1000))) : "--:--";
-
-        li.appendChild(checkbox);
-        li.appendChild(taskLine);
-        li.appendChild(timer);
-        list.appendChild(li);
-      });
-
-      _activeTimersInterval = setInterval(updateAllActiveTaskTimers, 1000);
-      updateAllActiveTaskTimers(); // update immediately
     }
+    requestAnimationFrame(updateRowTimer);
+  });
+}
+
 
     // Format MM:SS
     function formatSeconds(seconds) {
@@ -269,22 +338,32 @@
     }
 
     function updateAllActiveTaskTimers() {
-      document.querySelectorAll(".task-timer").forEach(span => {
-        const endTime = parseInt(span.dataset.endtime, 10);
-        if (!endTime) {
-          span.textContent = "--:--";
-          return;
-        }
-        let diff = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
-        span.textContent = formatSeconds(diff);
-        if (diff <= 0) {
-          span.textContent = "⏰";
-        }
-      });
+  document.querySelectorAll(".active-task-progress-timer").forEach(span => {
+    const endTime = parseInt(span.dataset.endtime, 10);
+    const duration = parseInt(span.dataset.duration, 10) || 0;
+    if (!endTime || !duration) {
+      span.textContent = "--:--";
+      return;
     }
+    let diff = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+    if (diff <= 0) {
+      // Оставляем только будильник
+      span.innerHTML = `<span class="active-alarm-icon">⏰</span>`;
+    } else {
+      span.textContent = formatSeconds(diff);
+    }
+    const bar = document.querySelector(`.active-task-progress-bar[data-taskid="${span.dataset.taskid}"]`);
+    if (bar) {
+      let percent = 100 - Math.floor((diff / duration) * 100);
+      if (percent < 0) percent = 0;
+      if (percent > 100) percent = 100;
+      bar.style.width = percent + "%";
+      bar.style.opacity = diff === 0 ? 0.5 : 0.94;
+    }
+  });
+}
 
-    // ==================
-    // Modal
+
     function openStartModal(title, id, durationMinutes) {
       const modal = document.getElementById("startTaskModal");
       modal.classList.add("show");
@@ -330,7 +409,6 @@
         headers: { "Content-Type": "application/json", "X-User": user },
         body: JSON.stringify(updatedTask)
       });
-      // If marked completed, clean up timer
       if (newStatus === "COMPLETED") {
         localStorage.removeItem(`activeTask_${taskId}_endTime`);
       }
@@ -429,6 +507,12 @@
         if(!dropdown.contains(e.target) && !dateDisplay.contains(e.target)) {
           hideDropdown();
         }
+        // Modal close by outside click
+        const modal = document.getElementById("startTaskModal");
+        const box = modal.querySelector(".modal-box");
+        if (modal.classList.contains("show") && !box.contains(e.target)) {
+          modal.classList.remove("show");
+        }
       });
 
       window.updateHeader = function(value, customDate) {
@@ -443,36 +527,16 @@
         dateDisplay.childNodes[0].textContent = label + " ";
       };
 
-      loadTasks();
-    });
-
-    document.addEventListener("DOMContentLoaded", function() {
       flatpickr("#taskDate", {
         minDate: "today",
         dateFormat: "Y-m-d",
         disableMobile: true,
         allowInput: false,
-        monthSelectorType: "dropdown",
-        onReady: function(selectedDates, dateStr, instance) {
-          const styleToday = () => {
-            setTimeout(() => {
-              const todayElem = instance.calendarContainer.querySelector(".flatpickr-day.today");
-              if (todayElem) {
-                todayElem.style.background = "transparent";
-                todayElem.style.color = "#0ff";
-                todayElem.style.border = "2px solid #ff00ff";
-                todayElem.style.boxShadow = "0 0 12px #ff00ff, 0 0 24px #0ff";
-                todayElem.style.borderRadius = "7px";
-                todayElem.style.fontWeight = "bold";
-              }
-            }, 5);
-          };
-          styleToday();
-          instance.calendarContainer.addEventListener("monthChange", styleToday);
-        }
+        monthSelectorType: "dropdown"
       });
-    });
 
+      loadTasks();
+    });
   </script>
 </body>
 </html>
