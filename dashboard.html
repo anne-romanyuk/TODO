@@ -383,7 +383,8 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-      document.getElementById("userDisplay").innerText = "Cyber User";
+  const user = localStorage.getItem("currentUser") || "Cyber User";
+  document.getElementById("userDisplay").innerText = user;
 
       document.getElementById("logoutBtn").onclick = function() {
         // Not real auth; just clears everything for demo
