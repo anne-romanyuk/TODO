@@ -3,12 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>Dashboard | Cyber To-Do</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
-</head>
-<body class="dashboard-page">
-
   <div class="user-header-bar">
     <span class="user-name-neon" id="userDisplay"></span>
     <button id="logoutBtn" class="logout-btn">
@@ -21,6 +15,11 @@
       <span class="logout-label">Logout</span>
     </button>
   </div>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
+</head>
+<body class="dashboard-page">
 
   <div id="startTaskModal" class="modal">
     <div class="modal-box">
@@ -65,16 +64,13 @@
 
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script>
-    // LOCAL STORAGE TASK LOGIC
+    const API_BASE = 'http://64.225.68.22:8090';
+    const user = localStorage.getItem("currentUser");
+    let allTasks = [];
+    let currentDateFilter = "today";
+    let currentCustomDate = null;
+    let _activeTimersInterval = null;
 
-    function getAllTasks() {
-      return JSON.parse(localStorage.getItem("cyberTasks") || "[]");
-    }
-    function saveAllTasks(tasks) {
-      localStorage.setItem("cyberTasks", JSON.stringify(tasks));
-    }
-
-    // DATE UTILS
     function getYMD(date) {
       if (!date) return '';
       if (typeof date !== "string") {
@@ -85,15 +81,15 @@
       return date;
     }
 
-    // GLOBAL STATE
-    let allTasks = [];
-    let currentDateFilter = "today";
-    let currentCustomDate = null;
-
-    function loadTasks() {
-      allTasks = getAllTasks();
-      renderActiveTasks(allTasks);
-      filterAndRenderTasks();
+    async function loadTasks() {
+      try {
+        const res = await fetch(`${API_BASE}/api/tasks`, { headers: { "X-User": user } });
+        allTasks = await res.json();
+        renderActiveTasks(allTasks);
+        filterAndRenderTasks();
+      } catch {
+        alert("Error loading tasks");
+      }
     }
 
     function filterAndRenderTasks() {
@@ -156,11 +152,8 @@
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.className = "custom-checkbox";
-        checkbox.checked = task.status === "COMPLETED";
         checkbox.addEventListener("change", () => {
-          task.status = checkbox.checked ? "COMPLETED" : "NEW";
-          saveAllTasks(allTasks);
-          loadTasks();
+          span.style.textDecoration = checkbox.checked ? "line-through" : "none";
         });
 
         const taskLine = document.createElement("div");
@@ -173,6 +166,7 @@
         });
 
         const span = document.createElement("span");
+        // ==== NO DATE HERE ====
         span.innerHTML = `<strong>${task.title}</strong>${task.durationMinutes ? ` (${task.durationMinutes} mins)` : ""}`;
         taskLine.appendChild(span);
 
@@ -183,154 +177,212 @@
     }
 
     // ==== ACTIVE TASKS ====
-    function renderActiveTasks(tasks) {
-      const list = document.getElementById("activeTaskList");
-      const note = document.getElementById("activeTaskNote");
-      list.innerHTML = "";
+   function renderActiveTasks(tasks) {
+  const list = document.getElementById("activeTaskList");
+  const note = document.getElementById("activeTaskNote");
+  list.innerHTML = "";
 
-      const activeTasks = tasks.filter(task => task.status === "ACTIVE");
+  // Only ACTIVE status!
+  const activeTasks = tasks.filter(task => task.status === "ACTIVE");
 
-      if (!activeTasks.length) {
-        note.style.display = "block";
-        list.style.display = "none";
-        return;
-      }
-      note.style.display = "none";
-      list.style.display = "block";
+  if (!activeTasks.length) {
+    note.style.display = "block";
+    list.style.display = "none";
+    return;
+  }
+  note.style.display = "none";
+  list.style.display = "block";
 
-      activeTasks.forEach(task => {
-        const li = document.createElement("li");
-        li.className = "task-box active-big";
-        li.style.position = "relative";
-        li.style.overflow = "visible";
-        li.style.padding = "0";
-        li.style.background = "none";
-        li.style.boxShadow = "none";
-        li.style.marginBottom = "24px";
+  activeTasks.forEach(task => {
+    const li = document.createElement("li");
+    li.className = "task-box active-big";
+    li.style.position = "relative";
+    li.style.overflow = "visible";
+    li.style.padding = "0";
+    li.style.background = "none";
+    li.style.boxShadow = "none";
+    li.style.marginBottom = "24px";
 
-        // --- FLEX CONTAINER [checkbox | progress bar area] ---
-        const rowFlex = document.createElement("div");
-        rowFlex.style.display = "flex";
-        rowFlex.style.alignItems = "center";
-        rowFlex.style.justifyContent = "center";
-        rowFlex.style.width = "100%";
-        rowFlex.style.gap = "16px";
-        rowFlex.style.minHeight = "60px";
+    // --- FLEX CONTAINER [checkbox | progress bar area] ---
+    const rowFlex = document.createElement("div");
+    rowFlex.style.display = "flex";
+    rowFlex.style.alignItems = "center";
+    rowFlex.style.justifyContent = "center";
+    rowFlex.style.width = "100%";
+    rowFlex.style.gap = "16px";
+    rowFlex.style.minHeight = "60px";
 
-        // --- Checkbox area (left) ---
-        const checkboxWrap = document.createElement("div");
-        checkboxWrap.style.display = "flex";
-        checkboxWrap.style.alignItems = "center";
-        checkboxWrap.style.justifyContent = "center";
-        checkboxWrap.style.minWidth = "60px";
-        checkboxWrap.style.width = "60px";
+    // --- Checkbox area (left) ---
+    const checkboxWrap = document.createElement("div");
+    checkboxWrap.style.display = "flex";
+    checkboxWrap.style.alignItems = "center";
+    checkboxWrap.style.justifyContent = "center";
+    checkboxWrap.style.minWidth = "60px";
+    checkboxWrap.style.width = "60px";
 
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.className = "custom-checkbox active-big-checkbox";
-        checkbox.checked = task.status === "COMPLETED";
-        checkbox.addEventListener("change", () => {
-          task.status = "COMPLETED";
-          saveAllTasks(allTasks);
-          loadTasks();
-        });
-        checkboxWrap.appendChild(checkbox);
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "custom-checkbox active-big-checkbox";
+    checkbox.checked = task.status === "COMPLETED";
+    checkbox.addEventListener("change", async () => {
+      await updateTaskStatus(task.id, "COMPLETED");
+      await loadTasks();
+    });
+    checkboxWrap.appendChild(checkbox);
 
-        // --- Progress bar + task text + timer (right, fills all) ---
-        const progressWrap = document.createElement("div");
-        progressWrap.className = "active-task-progress-bar-wrap";
-        progressWrap.style.flex = "1";
-        progressWrap.style.position = "relative";
-        progressWrap.style.display = "flex";
-        progressWrap.style.alignItems = "center";
-        progressWrap.style.justifyContent = "center";
-        progressWrap.style.minHeight = "56px";
-        progressWrap.style.padding = "0";
+    // --- Progress bar + task text + timer (right, fills all) ---
+    const progressWrap = document.createElement("div");
+    progressWrap.className = "active-task-progress-bar-wrap";
+    progressWrap.style.flex = "1";
+    progressWrap.style.position = "relative";
+    progressWrap.style.display = "flex";
+    progressWrap.style.alignItems = "center";
+    progressWrap.style.justifyContent = "center";
+    progressWrap.style.minHeight = "56px";
+    progressWrap.style.padding = "0";
 
-        // Progress bar
-        const duration = task.durationMinutes || 1;
-        const startTime = new Date(task.activeSince);
-        const now = new Date();
-        const elapsed = Math.max(0, (now - startTime) / 1000); // seconds
-        const total = duration * 60;
-        let percent = Math.min(100, (elapsed / total) * 100);
+    // Progress bar
+    // Progress bar logic, inside renderActiveTasks:
 
-        const progressBar = document.createElement("div");
-        progressBar.className = "active-task-progress-bar";
-        progressBar.style.width = percent + "%";
+    const localStart = localStorage.getItem(`activeTask_${task.id}_start`);
+const localDuration = localStorage.getItem(`activeTask_${task.id}_duration`);
 
-        const progressGlow = document.createElement("div");
-        progressGlow.className = "active-task-progress-bar-glow";
+let duration, startTime;
 
-        // Inner flex for text & timer (on top of progress bar)
-        const innerFlex = document.createElement("div");
-        innerFlex.className = "active-task-progress-inner-flex";
-        innerFlex.style.width = "100%";
-        innerFlex.style.display = "flex";
-        innerFlex.style.flexDirection = "row";
-        innerFlex.style.alignItems = "center";
-        innerFlex.style.justifyContent = "space-between";
-        innerFlex.style.position = "relative";
-        innerFlex.style.zIndex = "3";
-        innerFlex.style.padding = "0 18px";
-        innerFlex.style.minHeight = "58px";
-        innerFlex.style.pointerEvents = "none";
+if (localStart !== null && localDuration !== null) {
+  // Use local storage if both keys exist
+  duration = parseInt(localDuration, 10);
+  startTime = new Date(parseInt(localStart, 10));
+} else if (task.activeSince && task.durationMinutes) {
+  // Use backend values if no local timer
+  duration = task.durationMinutes;
+  startTime = new Date(task.activeSince);
+} else {
+  // Fallback: just use now, probably should never hit here
+  duration = task.durationMinutes || 1;
+  startTime = new Date();
+}
 
-        // Task title (centered with timer)
-        const span = document.createElement("span");
-        span.className = "active-task-progress-title";
-        span.innerText = task.title;
-        span.style.flex = "1 1 auto";
-        span.style.textAlign = "left";
-        span.style.whiteSpace = "nowrap";
-        span.style.overflow = "hidden";
-        span.style.textOverflow = "ellipsis";
-        span.style.fontSize = "1.15em";
+    
 
-        // Timer (right)
-        let secondsLeft = Math.max(0, total - elapsed);
-        const mins = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
-        const secs = String(Math.floor(secondsLeft % 60)).padStart(2, "0");
-        const timer = document.createElement("span");
-        timer.className = "active-task-progress-timer";
-        timer.innerHTML = "⏰ " + mins + ":" + secs;
-        timer.style.flex = "none";
-        timer.style.marginLeft = "24px";
-        timer.style.pointerEvents = "all";
 
-        innerFlex.appendChild(span);
-        innerFlex.appendChild(timer);
+    const now = new Date();
+    const elapsed = Math.max(0, (now - startTime) / 1000); // seconds
+    const total = duration * 60;
+    let percent = Math.min(100, (elapsed / total) * 100);
 
-        progressWrap.appendChild(progressBar);
-        progressWrap.appendChild(progressGlow);
-        progressWrap.appendChild(innerFlex);
+    const progressBar = document.createElement("div");
+    progressBar.className = "active-task-progress-bar";
+    progressBar.style.width = percent + "%";
 
-        // Compose row
-        rowFlex.appendChild(checkboxWrap);
-        rowFlex.appendChild(progressWrap);
-        li.appendChild(rowFlex);
-        list.appendChild(li);
+    const progressGlow = document.createElement("div");
+    progressGlow.className = "active-task-progress-bar-glow";
 
-        // TIMER ANIMATION
-        function updateRowTimer() {
-          const now = new Date();
-          const elapsed = Math.max(0, (now - startTime) / 1000);
-          let percent = Math.min(100, (elapsed / total) * 100);
-          let secondsLeft = Math.max(0, total - elapsed);
-          const mins = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
-          const secs = String(Math.floor(secondsLeft % 60)).padStart(2, "0");
-          progressBar.style.width = percent + "%";
-          timer.innerHTML = "⏰ " + mins + ":" + secs;
-          if (percent < 100 && task.status === "ACTIVE") {
-            requestAnimationFrame(updateRowTimer);
-          } else {
-            progressBar.style.width = "100%";
-            timer.innerHTML = "⏰ 00:00";
-          }
-        }
+    // Inner flex for text & timer (on top of progress bar)
+    const innerFlex = document.createElement("div");
+    innerFlex.className = "active-task-progress-inner-flex";
+    innerFlex.style.width = "100%";
+    innerFlex.style.display = "flex";
+    innerFlex.style.flexDirection = "row";
+    innerFlex.style.alignItems = "center";
+    innerFlex.style.justifyContent = "space-between";
+    innerFlex.style.position = "relative";
+    innerFlex.style.zIndex = "3";
+    innerFlex.style.padding = "0 18px";
+    innerFlex.style.minHeight = "58px";
+    innerFlex.style.pointerEvents = "none";
+
+    // Task title (centered with timer)
+    const span = document.createElement("span");
+    span.className = "active-task-progress-title";
+    span.innerText = task.title;
+    span.style.flex = "1 1 auto";
+    span.style.textAlign = "left";
+    span.style.whiteSpace = "nowrap";
+    span.style.overflow = "hidden";
+    span.style.textOverflow = "ellipsis";
+    span.style.fontSize = "1.15em";
+
+    // Timer (right)
+    let secondsLeft = Math.max(0, total - elapsed);
+    const mins = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+    const secs = String(Math.floor(secondsLeft % 60)).padStart(2, "0");
+    const timer = document.createElement("span");
+    timer.className = "active-task-progress-timer";
+    timer.innerHTML = "⏰ " + mins + ":" + secs;
+    timer.style.flex = "none";
+    timer.style.marginLeft = "24px";
+    timer.style.pointerEvents = "all";
+
+    innerFlex.appendChild(span);
+    innerFlex.appendChild(timer);
+
+    progressWrap.appendChild(progressBar);
+    progressWrap.appendChild(progressGlow);
+    progressWrap.appendChild(innerFlex);
+
+    // Compose row
+    rowFlex.appendChild(checkboxWrap);
+    rowFlex.appendChild(progressWrap);
+    li.appendChild(rowFlex);
+    list.appendChild(li);
+
+    // TIMER ANIMATION
+    function updateRowTimer() {
+      const now = new Date();
+      const elapsed = Math.max(0, (now - startTime) / 1000);
+      let percent = Math.min(100, (elapsed / total) * 100);
+      let secondsLeft = Math.max(0, total - elapsed);
+      const mins = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+      const secs = String(Math.floor(secondsLeft % 60)).padStart(2, "0");
+      progressBar.style.width = percent + "%";
+      timer.innerHTML = "⏰ " + mins + ":" + secs;
+      if (percent < 100) {
         requestAnimationFrame(updateRowTimer);
-      });
+      } else {
+        progressBar.style.width = "100%";
+        timer.innerHTML = "⏰ 00:00";
+      }
     }
+    requestAnimationFrame(updateRowTimer);
+  });
+}
+
+
+    // Format MM:SS
+    function formatSeconds(seconds) {
+      if (!seconds || seconds <= 0) return "00:00";
+      let m = Math.floor(seconds / 60);
+      let s = seconds % 60;
+      return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    }
+
+    function updateAllActiveTaskTimers() {
+  document.querySelectorAll(".active-task-progress-timer").forEach(span => {
+    const endTime = parseInt(span.dataset.endtime, 10);
+    const duration = parseInt(span.dataset.duration, 10) || 0;
+    if (!endTime || !duration) {
+      span.textContent = "--:--";
+      return;
+    }
+    let diff = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+    if (diff <= 0) {
+      // Оставляем только будильник
+      span.innerHTML = `<span class="active-alarm-icon">⏰</span>`;
+    } else {
+      span.textContent = formatSeconds(diff);
+    }
+    const bar = document.querySelector(`.active-task-progress-bar[data-taskid="${span.dataset.taskid}"]`);
+    if (bar) {
+      let percent = 100 - Math.floor((diff / duration) * 100);
+      if (percent < 0) percent = 0;
+      if (percent > 100) percent = 100;
+      bar.style.width = percent + "%";
+      bar.style.opacity = diff === 0 ? 0.5 : 0.94;
+    }
+  });
+}
+
 
     function openStartModal(title, id, durationMinutes) {
       const modal = document.getElementById("startTaskModal");
@@ -342,54 +394,74 @@
       }
     }
 
-    function startTimer() {
-      const m = document.getElementById("startTaskModal");
-      const mins = parseInt(document.getElementById("startMinutes").value, 10);
-      const taskId = Number(m.dataset.taskid);
-      let tasks = getAllTasks();
-      let task = tasks.find(t => t.id === taskId);
-      if (task) {
-        task.status = "ACTIVE";
-        task.durationMinutes = mins;
-        task.activeSince = Date.now();
-        saveAllTasks(tasks);
-        m.classList.remove("show");
-        loadTasks();
+async function startTimer() {
+  const m = document.getElementById("startTaskModal");
+  const mins = parseInt(document.getElementById("startMinutes").value, 10);
+  const taskId = m.dataset.taskid;
+  const task = allTasks.find(t => t.id == taskId);
+  if (task) {
+    let updatedTask = { ...task, status: "ACTIVE" };
+    if (mins && mins !== task.durationMinutes) {
+      updatedTask.durationMinutes = mins;
+    }
+    await fetch(`${API_BASE}/api/tasks/${taskId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "X-User": user },
+      body: JSON.stringify(updatedTask)
+    });
+    // Only here do we set localStorage
+    localStorage.setItem(`activeTask_${taskId}_start`, Date.now());
+    localStorage.setItem(`activeTask_${taskId}_duration`, mins);
+    m.classList.remove("show");
+    loadTasks();
+  }
+}
+
+    async function updateTaskStatus(taskId, newStatus) {
+      const task = allTasks.find(t => t.id === Number(taskId));
+      if (!task) return;
+      const updatedTask = { ...task, status: newStatus };
+      await fetch(`${API_BASE}/api/tasks/${taskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "X-User": user },
+        body: JSON.stringify(updatedTask)
+      });
+      if (newStatus === "COMPLETED") {
+        localStorage.removeItem(`activeTask_${taskId}_endTime`);
       }
     }
 
-    function addTask() {
+    async function addTask() {
       const title = document.getElementById('taskTitle').value.trim();
       const date = document.getElementById('taskDate').value;
-      const durationMinutes = parseInt(document.getElementById('taskDuration').value, 10);
+      const durationMinutes = document.getElementById('taskDuration').value;
       if (!title) {
         alert("Enter a title, please! (or just a bunch of swear words if you're feeling spicy)");
         return;
       }
-      let tasks = getAllTasks();
-      const newId = Date.now() + Math.floor(Math.random()*1000); // crude unique id
-      tasks.push({
-        id: newId,
-        title,
-        taskDate: date,
-        durationMinutes: durationMinutes || undefined,
-        status: "NEW"
+      await fetch(`${API_BASE}/api/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User": user
+        },
+        body: JSON.stringify({
+          title,
+          taskDate: date,
+          durationMinutes: durationMinutes ? parseInt(durationMinutes) : undefined
+        })
       });
-      saveAllTasks(tasks);
       document.getElementById('taskTitle').value = '';
       document.getElementById('taskDate').value = '';
       document.getElementById('taskDuration').value = '';
-      loadTasks();
+      await loadTasks();
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-  const user = localStorage.getItem("currentUser") || "Cyber User";
-  document.getElementById("userDisplay").innerText = user;
+      document.getElementById("userDisplay").innerText = user;
 
       document.getElementById("logoutBtn").onclick = function() {
-        // Not real auth; just clears everything for demo
-        localStorage.clear();
-        window.location.reload();
+        localStorage.removeItem("currentUser");
         window.location.href = "index.html";
       };
 
